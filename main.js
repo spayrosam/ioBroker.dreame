@@ -53,6 +53,7 @@ const DreameRoomClean = Object.freeze({
 var UpdateCleanset = true;
 var CheckRCObject = false;
 var CheckSCObject = false;
+var CheckUObject = true;
 class Dreame extends utils.Adapter {
     /**
      * @param {Partial<utils.AdapterOptions>} [options={}]
@@ -909,11 +910,15 @@ class Dreame extends utils.Adapter {
             },
             native: {},
         });
-        var CheckUObjectOb = await this.getStateAsync(In_path + 'cleanset.Update');
-        var CheckUObject = CheckUObjectOb.val;
-        if (CheckUObject == undefined) {
-            this.setStateAsync(In_path + 'cleanset.Update', true, true);
-            CheckUObject = true;
+        try {
+            var CheckUObjectOb = await this.getStateAsync(In_path + 'cleanset.Update');
+            CheckUObject = CheckUObjectOb.val;
+        } catch (error) {
+            this.log.error(error);
+            if (CheckUObject == null) {
+                this.setStateAsync(In_path + 'cleanset.Update', true, true);
+                CheckUObject = true;
+            }
         }
         await this.setObjectNotExists(In_path + 'cleanset.Start-Clean', {
             type: 'state',
@@ -926,11 +931,15 @@ class Dreame extends utils.Adapter {
             },
             native: {},
         });
-        var CheckSCObjectOb = await this.getStateAsync(In_path + 'cleanset.Start-Clean');
-        CheckSCObject = CheckSCObjectOb.val;
-        if (CheckSCObject == undefined) {
-            this.setStateAsync(In_path + 'cleanset.Start-Clean', false, true);
-            CheckSCObject = false;
+        try {
+            var CheckSCObjectOb = await this.getStateAsync(In_path + 'cleanset.Start-Clean');
+            CheckSCObject = CheckSCObjectOb.val;
+        } catch (error) {
+            this.log.error(error);
+            if (CheckSCObject == null) {
+                this.setStateAsync(In_path + 'cleanset.Start-Clean', false, true);
+                CheckSCObject = false;
+            }
         }
         await this.setObjectNotExists(In_path + 'cleanset.Restart', {
             type: 'state',
@@ -943,11 +952,15 @@ class Dreame extends utils.Adapter {
             },
             native: {},
         });
-        var CheckRCObjectOb = await this.getStateAsync(In_path + 'cleanset.Restart');
+        try {
+            var CheckRCObjectOb = await this.getStateAsync(In_path + 'cleanset.Restart');
             CheckRCObject = CheckRCObjectOb.val;
-        if (CheckRCObject == undefined) {
-            this.setStateAsync(In_path + 'cleanset.Restart', false, true);
-            CheckRCObject = false;
+        } catch (error) {
+            this.log.error(error);
+            if (CheckRCObject == null) {
+                this.setStateAsync(In_path + 'cleanset.Restart', false, true);
+                CheckRCObject = false;
+            }
         }
         for (var [key, value] of Object.entries(jsonread)) {
             //this.log.info(' decode Map JSON:' + `${key}: ${value}`);
@@ -999,7 +1012,7 @@ class Dreame extends utils.Adapter {
                                             pathMap = In_path + key + '.' + Subkey + '.Cleaning';
                                             await this.setcleansetPath(pathMap, DreameRoomClean);
                                             const Cleanstates = await this.getStateAsync(pathMap);
-                                            if (Cleanstates == undefined) {
+                                            if (Cleanstates == null) {
                                                 this.setStateAsync(pathMap, 0, true);
                                             }
                                         }
@@ -1318,13 +1331,13 @@ class Dreame extends utils.Adapter {
                                             'content-type': 'application/json',
                                             'dreame-auth': 'bearer ' + this.session.access_token,
                                         },
-                                        data: data
+                                        data: data,
                                     }).then(async (res) => {
                                         if (res.data.code !== 0) {
                                             this.log.error('Error setting device state');
                                             this.log.error(JSON.stringify(res.data));
-											this.setStateAsync(id, false, true);
-						                    CheckSCObject = false;
+                                            this.setStateAsync(id, false, true);
+                                            CheckSCObject = false;
                                             return;
                                         }
                                         if (res.data.result && res.data.result.length > 0) {
@@ -1332,8 +1345,8 @@ class Dreame extends utils.Adapter {
                                         }
                                         this.log.info(JSON.stringify(res.data));
                                         if (!res.data.result) {
-											this.setStateAsync(id, false, true);
-						                    CheckSCObject = false;
+                                            this.setStateAsync(id, false, true);
+                                            CheckSCObject = false;
                                             return;
                                         }
                                         const result = res.data.result;
@@ -1359,19 +1372,19 @@ class Dreame extends utils.Adapter {
                                         }]
                                     };
                                 } else {
-									this.setStateAsync(id, false, true);
-									CheckSCObject = false;
+                                    this.setStateAsync(id, false, true);
+                                    CheckSCObject = false;
                                     return;
                                 }
                             } catch (error) {
                                 this.log.error(error);
-								this.setStateAsync(id, false, true);
-						        CheckSCObject = false;
+                                this.setStateAsync(id, false, true);
+                                CheckSCObject = false;
                                 return;
                             }
                         }
-					    this.setStateAsync(id, false, true);
-						CheckSCObject = false;
+                        this.setStateAsync(id, false, true);
+                        CheckSCObject = false;
                     }
                     /*
 					[{"piid": 4,"value": "{\"customeClean\":[[5,2,27,2,2,2]]}"}]
@@ -1482,7 +1495,7 @@ class Dreame extends utils.Adapter {
                         'content-type': 'application/json',
                         'dreame-auth': 'bearer ' + this.session.access_token,
                     },
-                    data: data
+                    data: data,
                 }).then(async (res) => {
                     if (res.data.code !== 0) {
                         this.log.error('Error setting device state');
